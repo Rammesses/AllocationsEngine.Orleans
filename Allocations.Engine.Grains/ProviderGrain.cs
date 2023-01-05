@@ -6,6 +6,7 @@ namespace Allocations.Engine.Grains;
 public class ProviderCapacityGrain : Orleans.Grain, IProviderGrain
 {
     private readonly ILogger _logger;
+    private readonly bool _isAvailable;
 
     public ProviderCapacityGrain(ILogger<ProviderCapacityGrain> logger)
     {
@@ -14,7 +15,7 @@ public class ProviderCapacityGrain : Orleans.Grain, IProviderGrain
 
     public Task<bool> IsAvailable()
     {
-        return Task.FromResult(true);
+        return Task.FromResult(_isAvailable);
     }
 
     public Task<bool> Allocate(IWorkDefinition work)

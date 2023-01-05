@@ -1,4 +1,7 @@
-﻿using Allocations.Engine.Grains.Interfaces;
+﻿using Allocations.Client.Console;
+using Allocations.Engine.Grains.Interfaces;
+using McMaster.Extensions.CommandLineUtils;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,14 +22,17 @@ var host = new HostBuilder()
 
 await host.StartAsync();
 
-var client = host.Services.GetRequiredService<IClusterClient>();
+//var client = host.Services.GetRequiredService<IClusterClient>();
 
-// Get the availability of a single provider
-var providerId = Guid.NewGuid();
-var provider = client.GetGrain<IProviderGrain>(providerId);
-var isAvailable = await provider.IsAvailable() ? "available" : "not available";
+//// Get the availability of a single provider
+//var providerId = Guid.NewGuid();
+//var provider = client.GetGrain<IProviderGrain>(providerId);
+//var isAvailable = await provider.IsAvailable() ? "available" : "not available";
 
-Console.WriteLine($"Provider {providerId} is {isAvailable}");
+//Console.WriteLine($"Provider {providerId} is {isAvailable}");
 
+CommandLineApplication.Execute<CommandHandlers>(args);
 
 await host.StopAsync();
+
+Console.ReadLine();

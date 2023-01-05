@@ -1,0 +1,47 @@
+﻿@page "/capacity"
+@using Allocations.BlazorUI.Shared
+@inject HttpClient Http
+
+<PageTitle>Provider Capacity</PageTitle>
+
+<h1>Provider Capacity</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (providerCapacity == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Provider</th>
+                <th>Capacity</th>
+                <th>Available?</th>
+                <th>Valid At Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var provider in providerCapacity)
+            {
+                <tr>
+                    <td>@provider.Provider</td>
+                    <td>@provider.CapacityInPoints</td>
+                    <td>@provider.IsAvailable</td>
+                    <td>@provider.ValidAtDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private ProviderCapacity[]? providerCapacity;
+
+    protected override async Task OnInitializedAsync()
+    {
+        providerCapacity = await Http.GetFromJsonAsync<ProviderCapacity[]>("Capacity");
+    }
+}
