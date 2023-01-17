@@ -1,22 +1,30 @@
-﻿using Allocations.Engine.Grains.Interfaces;
+﻿using System.Security.Cryptography.X509Certificates;
+using Allocations.Engine.Grains.Interfaces;
+using Allocations.Engine.Grains.StateModels;
 using Microsoft.Extensions.Logging;
+using Orleans.Runtime;
 
 namespace Allocations.Engine.Grains;
 
-public class ProviderCapacityGrain : Orleans.Grain, IProviderGrain
+public class ProviderCapacityGrain : Grain<ProviderCapacityState>, IProviderGrain
 {
+    public const string StateEntryName = @"ProviderCapacity";
+    public const string StorageName = @"Provider";
+
     private readonly ILogger _logger;
     private readonly bool _isAvailable;
 
-    public ProviderCapacityGrain(ILogger<ProviderCapacityGrain> logger)
+    private readonly IPersistentState<ProviderCapacityState> _registryState;
+
+    public ProviderCapacityGrain(
+        [PersistentState(StateEntryName, StorageName)]
+        IPersistentState<ProviderCapacityState> registryState, ILogger<ProviderCapacityGrain> logger)
     {
+        _registryState = registryState ?? throw new ArgumentNullException(nameof(registryState));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public Task<bool> IsAvailable()
-    {
-        return Task.FromResult(_isAvailable);
-    }
+    public Task<bool> IsAvailable() => Task.FromResult(State.IsAvailable);
 
     public Task<bool> Allocate(IWorkDefinition work)
     {
@@ -30,10 +38,24 @@ public class ProviderCapacityGrain : Orleans.Grain, IProviderGrain
         return Task.FromResult(true);
     }
 
-    public Task<bool> HasCapacity()
+    public Task<bool> HasCapacity() => Task.FromResult((State.MonthlyCapacityInPoints - State.AllocationsThisMonthInPoints) > 0);
+
+    public async Task SetName(string name)
     {
-        _logger.LogInformation("Requested capacity from provider {grainId}", this.RuntimeIdentity);
-        return Task.FromResult(true);
+        State.Name = name;
+        await _registryState.WriteStateAsync();
+    }
+
+    public async Task SetMonthlyCapacityInPoints(int points)
+    {
+        State.MonthlyCapacityInPoints = points;
+        await _registryState.WriteStateAsync();
+    }
+
+    public async Task SetIsAvailable(bool isAvailable)
+    {
+        State.IsAvailable = isAvailable;
+        await _registryState.WriteStateAsync();
     }
 }
 

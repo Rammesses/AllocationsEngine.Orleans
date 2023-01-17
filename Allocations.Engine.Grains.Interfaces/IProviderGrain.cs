@@ -6,5 +6,8 @@ public interface IProviderGrain : Orleans.IGrainWithGuidKey
     Task<bool> HasCapacity();
     Task<bool> CanAccept(IWorkDefinition work);
     Task<bool> Allocate(IWorkDefinition work);
+    Task SetName(string name);
+    Task SetMonthlyCapacityInPoints(int points);
+    Task SetIsAvailable(bool isAvailable);
 }
 

@@ -16,30 +16,16 @@ var host = new HostBuilder()
                         })
                         .ConfigureLogging(logging => logging.AddConsole());
 
-                    //siloBuilder.AddMemoryGrainStorageAsDefault()
-                    //.AddMemoryGrainStorage(ProviderRegistryGrain.StorageName)
-                    //.AddMemoryGrainStorage(ProviderRegistryGrain.StateEntryName);
-
-                        //.AddAzureBlobGrainStorageAsDefault(
-                        //    options =>
-                        //    {
-                        //        options.ConfigureBlobServiceClient("UseDevelopmentStorage=true");
-                        //    })
-                        //.AddAzureBlobGrainStorage(
-                        //    ProviderRegistryGrain.StorageName,
-                        //    options =>
-                        //    {
-                        //        options.ConfigureBlobServiceClient("UseDevelopmentStorage=true");
-                        //    });
+                    siloBuilder.AddAzureBlobGrainStorageAsDefault((AzureBlobStorageOptions opt) =>
+                    {
+                        opt.ConfigureBlobServiceClient("UseDevelopmentStorage=true");
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage(ProviderRegistryGrain.StorageName);
+                    siloBuilder.AddAzureBlobGrainStorage(ProviderCapacityGrain.StorageName);
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddSingleton<IHostedService, Worker>();
-                    s.AddOrleans(siloBuilder => {
-                        siloBuilder.AddMemoryGrainStorageAsDefault()
-                            .AddMemoryGrainStorage(ProviderRegistryGrain.StorageName)
-                            .AddMemoryGrainStorage(ProviderRegistryGrain.StateEntryName);
-                    });
+                    s.AddSingleton<IHostedService, Worker>();                   
                 })
                 .Build();
 

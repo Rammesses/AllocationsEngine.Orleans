@@ -1,6 +1,7 @@
 ﻿@page "/settings"
 @using Allocations.BlazorUI.Shared
 @inject HttpClient Http
+@inject ILogger<Settings> Logger
 
 <PageTitle>Settings</PageTitle>
 
@@ -9,16 +10,26 @@
 <p role="status">Registry Initialised? : @isInitialised</p>
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="InitialiseRegistry">Initialise Registry</button>
+<EditForm Model="@initialisationData" OnValidSubmit="InitialiseRegistry">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputNumber id="numberOfProviders" @bind-Value="initialisationData.NumberOfProvidersRequired" />
+    <button class="btn btn-primary" type="submit">Initialise Registry</button>
+
+</EditForm>
 
 @code {
     private int currentCount = 0;
-
     private bool isRegistryInitialised = false;
 
     private string isInitialised => isRegistryInitialised ? "Yes" : "No";
+
+    private InitialisationData initialisationData = new();
+
     private async Task InitialiseRegistry()
     {
-        _ = await Http.PostAsync("settings/initialise", null);
+        Logger.LogInformation("Initialising registry with {requiredProviders} providers...", initialisationData.NumberOfProvidersRequired);
+        _ = await Http.PostAsJsonAsync("settings/initialise", initialisationData);
     }
 }

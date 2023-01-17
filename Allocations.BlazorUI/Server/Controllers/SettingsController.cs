@@ -1,4 +1,5 @@
-﻿using Allocations.Engine.Grains.Interfaces;
+﻿using Allocations.BlazorUI.Shared;
+using Allocations.Engine.Grains.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,8 +21,8 @@ public class SettingsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("[controller]/initialise")]
-    public async Task<IActionResult> Initialise()
+    [Route("initialise")]
+    public async Task<IActionResult> Initialise(InitialisationData initialisationData)
     {
         var registryGrain = this._clusterClient.GetGrain<IProviderRegistryGrain>("surveyors");
         if (await registryGrain.IsRegistryInitialised())
@@ -30,7 +31,7 @@ public class SettingsController : ControllerBase
             return (IActionResult)new OkResult();
         }
 
-        var seedSize = new Random().Next(1000);
+        var seedSize = initialisationData.NumberOfProvidersRequired;
 
         await registryGrain.Initialise(seedSize);
 

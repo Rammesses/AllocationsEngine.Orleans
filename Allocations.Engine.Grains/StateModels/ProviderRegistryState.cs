@@ -2,5 +2,6 @@
 
 public class ProviderRegistryState
 {
-    public IEnumerable<Guid> RegisteredProviderIDs { get; set; } = new List<Guid>();
+    public bool IsInitialised { get; set; } = false;
+    public HashSet<Guid> RegisteredProviderIDs { get; set; } = new ();
 }
