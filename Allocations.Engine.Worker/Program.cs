@@ -16,12 +16,14 @@ var host = new HostBuilder()
                         })
                         .ConfigureLogging(logging => logging.AddConsole());
 
-                    siloBuilder.AddAzureBlobGrainStorageAsDefault((AzureBlobStorageOptions opt) =>
+                    Action<AzureBlobStorageOptions> configure = (AzureBlobStorageOptions opt) =>
                     {
                         opt.ConfigureBlobServiceClient("UseDevelopmentStorage=true");
-                    });
-                    siloBuilder.AddAzureBlobGrainStorage(ProviderRegistryGrain.StorageName);
-                    siloBuilder.AddAzureBlobGrainStorage(ProviderCapacityGrain.StorageName);
+                    };
+
+                    siloBuilder.AddAzureBlobGrainStorageAsDefault(configure);
+                    siloBuilder.AddAzureBlobGrainStorage(ProviderRegistryGrain.StorageName, configure);
+                    siloBuilder.AddAzureBlobGrainStorage(ProviderCapacityGrain.StorageName, configure);
                 })
                 .ConfigureServices(s =>
                 {
