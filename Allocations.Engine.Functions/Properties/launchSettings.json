@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Allocations.Engine.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7282"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 33730,
+      "useSSL": false
+    }
+  }
+}
