@@ -21,7 +21,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorUI", "BlazorUI", "{57
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{CDF22308-07A7-4BDA-9287-2ACE5C0CC2D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Allocations.Engine.Functions", "Allocations.Engine.Functions\Allocations.Engine.Functions.csproj", "{D3B25CA4-D294-409F-A0C4-C1A793AFD574}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Allocations.Engine.Functions", "Allocations.Engine.Functions\Allocations.Engine.Functions.csproj", "{D3B25CA4-D294-409F-A0C4-C1A793AFD574}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8D216B82-3DCD-4F56-ACD4-EC291C52DCE1}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+		Start_Azurite.ps1 = Start_Azurite.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

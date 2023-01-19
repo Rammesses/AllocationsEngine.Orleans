@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 
 using Orleans.Runtime;
 
+using System.Diagnostics;
+
 namespace Allocations.Engine.Grains;
 
 public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegistryGrain
@@ -39,22 +41,35 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
     {
         var rnd = new Random();
 
-        foreach (var index in Enumerable.Range(0, size))
-        {
-            var providerId = Guid.NewGuid();
+        var stopwatch = Stopwatch.StartNew();
 
-            var providerGrain = GrainFactory.GetGrain<IProviderGrain>(providerId);
-            await providerGrain.SetName(Faker.Company.Name());
-            await providerGrain.SetMonthlyCapacityInPoints(rnd.Next(100));
-            await providerGrain.SetIsAvailable(rnd.Next(100) > 75);
+        var initialisationTasks = Enumerable.Range(0, size)
+            .Select(index =>
+            {
+                var providerId = Guid.NewGuid();
+                var providerGrain = GrainFactory.GetGrain<IProviderGrain>(providerId);
+                return Task.Run<Guid>(async () =>
+                {
+                    await providerGrain.SetName(Faker.Company.Name());
+                    await providerGrain.SetMonthlyCapacityInPoints(rnd.Next(100));
+                    await providerGrain.SetIsAvailable(rnd.Next(100) > 75);
+                    return providerId;
+                });
+            });
 
-            this.State.RegisteredProviderIDs.Add(providerId);
-        }
+        Task.WaitAll(initialisationTasks.OfType<Task>().ToArray());
+
+        foreach (var task in initialisationTasks)
+        this.State.RegisteredProviderIDs.Add(task.Result);
 
         this._registryState.State.IsInitialised = true;
         await this._registryState.WriteStateAsync();
 
-        return await this.GetRegisteredProvidersCount();
+        stopwatch.Stop();
+
+        var actualCount = await this.GetRegisteredProvidersCount();
+        _logger.LogInformation("Initialised registry with {providerCount} providers in {duration}ms", actualCount, stopwatch.ElapsedMilliseconds);
+        return actualCount;
     }
 
     public Task<bool> IsRegistryInitialised()
