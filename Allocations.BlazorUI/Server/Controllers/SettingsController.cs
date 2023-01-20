@@ -25,11 +25,11 @@ public class SettingsController : ControllerBase
     public async Task<IActionResult> Initialise(InitialisationData initialisationData)
     {
         var registryGrain = this._clusterClient.GetGrain<IProviderRegistryGrain>("surveyors");
-        if (await registryGrain.IsRegistryInitialised())
-        {
-            _logger.LogInformation("Registry is already initialised.");
-            return (IActionResult)new OkResult();
-        }
+        //if (await registryGrain.IsRegistryInitialised())
+        //{
+        //    _logger.LogInformation("Registry is already initialised.");
+        //    return (IActionResult)new OkResult();
+        //}
 
         var seedSize = initialisationData.NumberOfProvidersRequired;
 

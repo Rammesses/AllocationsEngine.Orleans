@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using Allocations.Engine.Grains.Interfaces;
+using Allocations.Engine.Grains.Interfaces.Models;
 using Allocations.Engine.Grains.StateModels;
 using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
@@ -40,6 +41,14 @@ public class ProviderCapacityGrain : Grain<ProviderCapacityState>, IProviderGrai
 
     public Task<bool> HasCapacity() => Task.FromResult((State.MonthlyCapacityInPoints - State.AllocationsThisMonthInPoints) > 0);
 
+    public async Task Initialise(string name, int points, bool isAvailable)
+    {
+        State.Name = name;
+        State.MonthlyCapacityInPoints = points;
+        State.IsAvailable = isAvailable;
+        await _registryState.WriteStateAsync();
+    }
+
     public async Task SetName(string name)
     {
         State.Name = name;
@@ -56,6 +65,17 @@ public class ProviderCapacityGrain : Grain<ProviderCapacityState>, IProviderGrai
     {
         State.IsAvailable = isAvailable;
         await _registryState.WriteStateAsync();
+    }
+
+    public Task<ProviderSummary> GetSummary()
+    {
+        return Task.FromResult(new ProviderSummary()
+        {
+            Id = this.State.ProviderId,
+            Name = this.State.Name,
+            CapacityInPoints = this.State.MonthlyCapacityInPoints - this.State.AllocationsThisMonthInPoints,
+            CapacityValidAt = DateTime.UtcNow
+        });
     }
 }
 

@@ -34,12 +34,15 @@ namespace Allocations.BlazorUI.Server.Controllers
                 _logger.LogInformation("Registry is NOT initialised.");
             }
 
-            var registrations = await registryGrain.GetRegisteredProvidersCount();
-            return Enumerable.Range(1, (int)registrations).Select(index => new ProviderCapacity
+            int pageNo = 0;
+            int pageSize = 250;
+            var providers = await registryGrain.GetPagedProvidersSummaries(pageNo, pageSize);
+
+            return providers.Items.Select(p => new ProviderCapacity
             {
-                ValidAtDate = DateTime.Now.AddDays(index),
-                CapacityInPoints = Random.Shared.Next(-20, 55),
-                Provider = Summaries[Random.Shared.Next(Summaries.Length)]
+                ValidAtDate = p.CapacityValidAt ?? DateTime.UtcNow,
+                CapacityInPoints = p.CapacityInPoints,
+                Provider = p.Name
             })
             .ToArray();
         }

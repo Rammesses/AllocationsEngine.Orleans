@@ -1,14 +1,18 @@
 ﻿using Allocations.Engine.Grains.Interfaces;
+using Allocations.Engine.Grains.Interfaces.Models;
 using Allocations.Engine.Grains.StateModels;
 
 using Microsoft.Extensions.Logging;
 
+using Orleans.Concurrency;
 using Orleans.Runtime;
+using Orleans.Serialization.Codecs;
 
 using System.Diagnostics;
 
 namespace Allocations.Engine.Grains;
 
+[StatelessWorker]
 public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegistryGrain
 {
     public const string StateEntryName = "providerRegistry";
@@ -27,14 +31,50 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
         this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public Task<long> GetRegisteredProvidersCount()
+    public async Task<PagedProviderSummaryCollection> GetPagedProvidersSummaries(int pageNo, int pageSize)
     {
-        if (_registryState == null)
-        {
-            return Task.FromResult<long>(5);
-        }
+        if (await this.IsRegistryInitialised() == false)
+            return new PagedProviderSummaryCollection();
 
-        return Task.FromResult(State.RegisteredProviderIDs.LongCount());
+        var skip = pageNo * pageSize;
+        var allProviders = this.State.RegisteredProviderIDs;
+
+        var stopwatch = Stopwatch.StartNew();
+
+        var summaryTasks = allProviders.Select(providerId =>
+        {
+            var providerGrain = GrainFactory.GetGrain<IProviderGrain>(providerId);
+            return providerGrain.GetSummary();
+        });
+
+        Task.WaitAll(summaryTasks.OfType<Task>().ToArray());
+
+        var providerSummaries = summaryTasks.Select(t => t.Result).ToArray();
+
+        var slice = providerSummaries.OrderByDescending(s => s.CapacityInPoints).Skip(skip).Take(pageSize);
+
+        stopwatch.Stop();
+
+        var result =new PagedProviderSummaryCollection()
+        {
+            PageNo = pageNo,
+            PageSize = pageSize,
+            Items = slice.ToArray()
+        };
+
+        _logger.LogInformation("Returned {providerCount} providers from {totalCount} in {duration}ms",
+                               result.PageCount, 
+                               this.State.RegisteredProviderIDs.Count, 
+                               stopwatch.ElapsedMilliseconds);
+        return result;
+    }
+
+    public async Task<long> GetRegisteredProvidersCount()
+    {
+        if (await this.IsRegistryInitialised() == false)
+            return 0;
+
+        return State.RegisteredProviderIDs.LongCount();
     }
 
     public async Task<long> Initialise(int size)
@@ -50,9 +90,7 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
                 var providerGrain = GrainFactory.GetGrain<IProviderGrain>(providerId);
                 return Task.Run<Guid>(async () =>
                 {
-                    await providerGrain.SetName(Faker.Company.Name());
-                    await providerGrain.SetMonthlyCapacityInPoints(rnd.Next(100));
-                    await providerGrain.SetIsAvailable(rnd.Next(100) > 75);
+                    await providerGrain.Initialise(Faker.Company.Name(), rnd.Next(100), (rnd.Next(100) > 75));
                     return providerId;
                 });
             });
@@ -60,7 +98,7 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
         Task.WaitAll(initialisationTasks.OfType<Task>().ToArray());
 
         foreach (var task in initialisationTasks)
-        this.State.RegisteredProviderIDs.Add(task.Result);
+            this.State.RegisteredProviderIDs.Add(task.Result);
 
         this._registryState.State.IsInitialised = true;
         await this._registryState.WriteStateAsync();
