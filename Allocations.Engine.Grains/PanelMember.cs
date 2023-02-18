@@ -7,7 +7,7 @@ using Orleans.Runtime;
 
 namespace Allocations.Engine.Grains;
 
-public class ProviderCapacityGrain : Grain<ProviderCapacityState>, IProviderGrain
+public class PanelMember : Grain<PanelMemberState>, IPanelMember
 {
     public const string StateEntryName = @"ProviderCapacity";
     public const string StorageName = @"Provider";
@@ -15,11 +15,11 @@ public class ProviderCapacityGrain : Grain<ProviderCapacityState>, IProviderGrai
     private readonly ILogger _logger;
     private readonly bool _isAvailable;
 
-    private readonly IPersistentState<ProviderCapacityState> _registryState;
+    private readonly IPersistentState<PanelMemberState> _registryState;
 
-    public ProviderCapacityGrain(
+    public PanelMember(
         [PersistentState(StateEntryName, StorageName)]
-        IPersistentState<ProviderCapacityState> registryState, ILogger<ProviderCapacityGrain> logger)
+        IPersistentState<PanelMemberState> registryState, ILogger<PanelMember> logger)
     {
         _registryState = registryState ?? throw new ArgumentNullException(nameof(registryState));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -67,9 +67,9 @@ public class ProviderCapacityGrain : Grain<ProviderCapacityState>, IProviderGrai
         await _registryState.WriteStateAsync();
     }
 
-    public Task<ProviderSummary> GetSummary()
+    public Task<PanelMemberSummary> GetSummary()
     {
-        return Task.FromResult(new ProviderSummary()
+        return Task.FromResult(new PanelMemberSummary()
         {
             Id = this.State.ProviderId,
             Name = this.State.Name,

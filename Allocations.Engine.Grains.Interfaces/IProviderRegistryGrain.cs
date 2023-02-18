@@ -16,5 +16,5 @@ public interface IProviderRegistryGrain : IGrainWithStringKey
     Task<long> Initialise(int size);
 
     [AlwaysInterleave] 
-    Task<PagedProviderSummaryCollection> GetPagedProvidersSummaries(int pageNo, int pageSize);
+    Task<PagedPanelMemberSummaryCollection> GetPagedProvidersSummaries(int pageNo, int pageSize);
 }

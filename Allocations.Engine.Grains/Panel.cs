@@ -13,28 +13,36 @@ using System.Diagnostics;
 namespace Allocations.Engine.Grains;
 
 [StatelessWorker]
-public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegistryGrain
+public class Panel : Grain<PanelState>, IProviderRegistryGrain
 {
     public const string StateEntryName = "providerRegistry";
     public const string StorageName = "providerStore";
 
-    private readonly IPersistentState<ProviderRegistryState> _registryState;
+    private readonly IPersistentState<PanelState> _registryState;
     private readonly ILogger _logger;
 
-    public ProviderRegistryGrain(
+    public Panel(
         [PersistentState(StateEntryName, StorageName)]
-        IPersistentState<ProviderRegistryState> registryState,
-        ILogger<ProviderRegistryGrain> logger
+        IPersistentState<PanelState> registryState,
+        ILogger<Panel> logger
         )
     {
         this._registryState = registryState;
         this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<PagedProviderSummaryCollection> GetPagedProvidersSummaries(int pageNo, int pageSize)
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        this._logger.LogInformation("Rehydrated ProviderRegistryGrain {grainIdentit} with {providerCount} ", this.GetGrainId());
+
+        return base.OnActivateAsync(cancellationToken);
+
+    }
+
+    public async Task<PagedPanelMemberSummaryCollection> GetPagedProvidersSummaries(int pageNo, int pageSize)
     {
         if (await this.IsRegistryInitialised() == false)
-            return new PagedProviderSummaryCollection();
+            return new PagedPanelMemberSummaryCollection();
 
         var skip = pageNo * pageSize;
         var allProviders = this.State.RegisteredProviderIDs;
@@ -43,7 +51,7 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
 
         var summaryTasks = allProviders.Select(providerId =>
         {
-            var providerGrain = GrainFactory.GetGrain<IProviderGrain>(providerId);
+            var providerGrain = GrainFactory.GetGrain<IPanelMember>(providerId);
             return providerGrain.GetSummary();
         });
 
@@ -55,7 +63,7 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
 
         stopwatch.Stop();
 
-        var result =new PagedProviderSummaryCollection()
+        var result =new PagedPanelMemberSummaryCollection()
         {
             PageNo = pageNo,
             PageSize = pageSize,
@@ -87,7 +95,7 @@ public class ProviderRegistryGrain : Grain<ProviderRegistryState>, IProviderRegi
             .Select(index =>
             {
                 var providerId = Guid.NewGuid();
-                var providerGrain = GrainFactory.GetGrain<IProviderGrain>(providerId);
+                var providerGrain = GrainFactory.GetGrain<IPanelMember>(providerId);
                 return Task.Run<Guid>(async () =>
                 {
                     await providerGrain.Initialise(Faker.Company.Name(), rnd.Next(100), (rnd.Next(100) > 75));

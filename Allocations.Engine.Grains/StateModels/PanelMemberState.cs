@@ -1,9 +1,9 @@
 ﻿using System;
 namespace Allocations.Engine.Grains.StateModels;
 
-public class ProviderCapacityState
+public class PanelMemberState
 {
-	public ProviderCapacityState()
+	public PanelMemberState()
 	{
 	}
 

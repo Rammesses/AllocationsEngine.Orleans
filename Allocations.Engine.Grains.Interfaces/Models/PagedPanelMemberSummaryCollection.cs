@@ -1,9 +1,9 @@
 ﻿namespace Allocations.Engine.Grains.Interfaces.Models;
 
 [GenerateSerializer]
-public struct PagedProviderSummaryCollection
+public struct PagedPanelMemberSummaryCollection
 {
-    public PagedProviderSummaryCollection()
+    public PagedPanelMemberSummaryCollection()
     { }
 
     [Id(0)]
@@ -16,7 +16,7 @@ public struct PagedProviderSummaryCollection
     public int PageSize { get; set; }
 
     [Id(3)]
-    public ProviderSummary[] Items { get; set; } = Array.Empty<ProviderSummary>();
+    public PanelMemberSummary[] Items { get; set; } = Array.Empty<PanelMemberSummary>();
 
     public int PageCount => Items.Length;
 }

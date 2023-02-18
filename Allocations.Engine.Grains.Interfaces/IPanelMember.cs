@@ -4,7 +4,7 @@ using Orleans.Concurrency;
 
 namespace Allocations.Engine.Grains.Interfaces;
 
-public interface IProviderGrain : Orleans.IGrainWithGuidKey
+public interface IPanelMember : Orleans.IGrainWithGuidKey
 {
     [AlwaysInterleave]
     Task<bool> IsAvailable();
@@ -23,6 +23,6 @@ public interface IProviderGrain : Orleans.IGrainWithGuidKey
     Task SetIsAvailable(bool isAvailable);
 
     [AlwaysInterleave]
-    Task<ProviderSummary> GetSummary();
+    Task<PanelMemberSummary> GetSummary();
 }
 

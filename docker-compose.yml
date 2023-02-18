@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  allocations.engine.worker:
+    image: ${DOCKER_REGISTRY-}allocationsengine
+    build:
+      context: .
+      dockerfile: Allocations.Engine.Worker/Dockerfile

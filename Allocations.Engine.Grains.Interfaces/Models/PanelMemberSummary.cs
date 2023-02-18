@@ -1,7 +1,7 @@
 ﻿namespace Allocations.Engine.Grains.Interfaces.Models;
 
 [GenerateSerializer]
-public struct ProviderSummary
+public struct PanelMemberSummary
 {
     [Id(0)]
     public Guid Id { get; set; }

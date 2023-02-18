@@ -22,8 +22,8 @@ var host = new HostBuilder()
                     };
 
                     siloBuilder.AddAzureBlobGrainStorageAsDefault(configure);
-                    siloBuilder.AddAzureBlobGrainStorage(ProviderRegistryGrain.StorageName, configure);
-                    siloBuilder.AddAzureBlobGrainStorage(ProviderCapacityGrain.StorageName, configure);
+                    siloBuilder.AddAzureBlobGrainStorage(Panel.StorageName, configure);
+                    siloBuilder.AddAzureBlobGrainStorage(PanelMember.StorageName, configure);
                 })
                 .ConfigureServices(s =>
                 {
