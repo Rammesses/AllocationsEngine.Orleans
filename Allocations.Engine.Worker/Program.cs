@@ -1,24 +1,38 @@
 ﻿using Allocations.Engine.Grains;
+using Allocations.Engine.Worker;
 
 using AllocationServuce;
 
 using Orleans.Configuration;
-using Orleans.Hosting;
 
 var host = new HostBuilder()
                 .UseOrleans(siloBuilder =>
                 {
-                    siloBuilder.UseLocalhostClustering()
-                        .Configure<ClusterOptions>(options =>
-                        {
-                            options.ClusterId = "dev";
-                            options.ServiceId = "Allocations";
-                        })
-                        .ConfigureLogging(logging => logging.AddConsole());
+                    Action<ClusterOptions> configureClusterOptions = options =>
+                    {
+                        options.ClusterId = "dev";
+                        options.ServiceId = "Allocations";
+                    };
+
+                    if (HostingExtensions.InDocker)
+                    {
+                        siloBuilder.UseAzureStorageClustering(opts => opts.ConfigureTableServiceClient("UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://storage"))
+                              .Configure(configureClusterOptions);
+                    }
+                    else
+                    {
+                        siloBuilder.UseLocalhostClustering()
+                            .Configure(configureClusterOptions);
+                    }
+
+                    siloBuilder.ConfigureLogging(logging => logging.AddConsole());
 
                     Action<AzureBlobStorageOptions> configure = (AzureBlobStorageOptions opt) =>
                     {
-                        opt.ConfigureBlobServiceClient("UseDevelopmentStorage=true");
+                    if (HostingExtensions.InDocker)
+                            opt.ConfigureBlobServiceClient("UseDevelopmentStorage=true; DevelopmentStorageProxyUri=http://storage");
+                        else
+                            opt.ConfigureBlobServiceClient("UseDevelopmentStorage=true");
                     };
 
                     siloBuilder.AddAzureBlobGrainStorageAsDefault(configure);

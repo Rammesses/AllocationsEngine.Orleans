@@ -1,0 +1,70 @@
+version: '3.4'
+
+services:
+  allocations.storage:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports: 
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    networks: 
+      - back_end
+
+  allocations.engine.worker:
+    image: ${DOCKER_REGISTRY-}allocationsengineworker
+    ports:
+      - "11111:11111"
+      - "30000:30000"
+    links:
+      - "allocations.storage:storage"
+    depends_on:
+      allocations.storage:
+        condition: service_started
+    networks: 
+      - back_end
+    build:
+      context: .
+      dockerfile: Allocations.Engine.Worker/Dockerfile
+
+  allocations.engine.functions:
+    image: ${DOCKER_REGISTRY-}allocationsenginefunctions
+    ports:
+      - "8000:80"
+      - "8001:443"
+    links:
+      - "allocations.storage:storage"
+    depends_on: 
+      allocations.storage:
+        condition: service_started
+      allocations.engine.worker:
+        condition: service_started
+    networks: 
+      - back_end
+    build:
+      context: .
+      dockerfile: Allocations.Engine.Functions/Dockerfile
+
+  allocations.blazorui.server:
+    image: ${DOCKER_REGISTRY-}allocationsblazoruiserver
+    ports:
+      - "8080:80"
+      - "8081:443"
+    links:
+      - "allocations.engine.functions:functions"
+      - "allocations.engine.worker:worker"
+    depends_on:
+      allocations.engine.worker:
+        condition: service_started
+      allocations.engine.functions:
+        condition: service_started
+    networks: 
+      - front_end
+      - back_end
+    build:
+      context: .
+      dockerfile: Allocations.BlazorUI/Server/Dockerfile
+
+networks:
+  front_end:
+  back_end:
+
