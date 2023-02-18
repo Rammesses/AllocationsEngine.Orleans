@@ -1,4 +1,8 @@
+using 
+    Allocations.BlazorUI.Server;
+
 using Orleans.Configuration;
+using Orleans.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,12 +13,22 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddOrleansClient(client =>
 {
-    client.UseLocalhostClustering()
-        .Configure<ClusterOptions>(options =>
-        {
-            options.ClusterId = "dev";
-            options.ServiceId = "Allocations";
-        });
+    Action<ClusterOptions> configureClusterOptions = options =>
+    {
+        options.ClusterId = "dev";
+        options.ServiceId = "Allocations";
+    };
+
+    if (HostingExtensions.InDocker)
+    {
+        client.UseAzureStorageClustering(opts => opts.ConfigureTableServiceClient("UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"))
+              .Configure(configureClusterOptions);
+    }
+    else
+    {
+        client.UseLocalhostClustering()
+            .Configure(configureClusterOptions);
+    }
 });
 
 var app = builder.Build();

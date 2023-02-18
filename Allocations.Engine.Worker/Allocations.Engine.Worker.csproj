@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-AllocationServuce-ed9478b9-b3d7-46a7-bb90-4513e4dfffa6</UserSecretsId>
     <AssemblyName>Allocations.Engine.Worker</AssemblyName>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'AllocationServuce' ">
@@ -18,9 +19,11 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.6.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="7.1.0" />
     <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="7.0.0" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Allocations.Engine.Grains.Interfaces\Allocations.Engine.Grains.Interfaces.csproj" />

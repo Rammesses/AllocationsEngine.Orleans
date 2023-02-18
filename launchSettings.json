@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "allocations.engine.functions": "StartDebugging",
+        "allocations.engine.worker": "StartDebugging",
+        "allocations.blazorui.server": "StartDebugging",
+        "allocations.storage": "StartWithoutDebugging"
+      }
+    },
+    "Docker Compose (without Debugging)": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "allocations.blazorui.server": "StartWithoutDebugging",
+        "allocations.engine.functions": "StartWithoutDebugging",
+        "allocations.engine.worker": "StartWithoutDebugging",
+        "allocations.storage": "StartWithoutDebugging"
+      }
+    }
+  }
+}

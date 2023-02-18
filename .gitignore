@@ -404,3 +404,5 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 AzureStorageEmulator/
+Allocations.BlazorUI/Server/core
+Allocations.Engine.Worker/core
